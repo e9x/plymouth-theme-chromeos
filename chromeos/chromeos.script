@@ -35,8 +35,8 @@ splash_sprite.SetX(Window.GetX() + (Window.GetWidth(0) / 2 - splash_frames[0].Ge
 splash_sprite.SetY(Window.GetY() + (Window.GetHeight(0) / 2 - splash_frames[0].GetHeight() / 2));
 
 progress = 0;
-progress_speed = 4;
-progress_delay = 20; // fraction of a second
+progress_speed = 2;
+progress_delay = 12; // fraction of a second
 progress_max = (splash_frames_count * progress_speed) + progress_delay;
 
 splash_finished = 0;
