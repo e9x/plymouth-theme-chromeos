@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=chromeos
+Description=chromeOS boot splash in plymouth
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/chromeos
+ScriptFile=/usr/share/plymouth/themes/chromeos/chromeos.script

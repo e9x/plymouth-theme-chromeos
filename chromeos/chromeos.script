@@ -1,0 +1,126 @@
+// 1. Animate the chromeOS logo fade-in
+// 2. If the password/message prompt was shown, hide those until the animation finishes
+
+// Screen size
+screen.w = Window.GetWidth(0);
+screen.h = Window.GetHeight(0);
+screen.half.w = Window.GetWidth(0) / 2;
+screen.half.h = Window.GetHeight(0) / 2;
+
+// Question prompt
+question = null;
+answer = null;
+
+// Message
+message = null;
+
+font = "Noto Sans 12"; 
+
+// Password prompt
+bullets = null;
+prompt = null;
+bullet.image = Image.Text("●", 1, 1, 1, font);
+
+splash_frames_count = 30;
+
+for (i = 0; i < splash_frames_count + 1; i++) {
+  padded = i;
+  if (i < 10)
+    padded = "0" + i;
+  splash_frames[i] = Image("boot_splash_frame" + padded + ".png");
+}
+
+splash_sprite = Sprite();
+splash_sprite.SetX(Window.GetX() + (Window.GetWidth(0) / 2 - splash_frames[0].GetWidth() / 2));
+splash_sprite.SetY(Window.GetY() + (Window.GetHeight(0) / 2 - splash_frames[0].GetHeight() / 2));
+
+progress = 0;
+progress_speed = 4;
+progress_delay = 20; // fraction of a second
+progress_max = (splash_frames_count * progress_speed) + progress_delay;
+
+splash_finished = 0;
+
+fun refresh_callback() {
+  frame = Math.Int((progress - progress_delay) / progress_speed);
+  splash_sprite.SetImage(splash_frames[frame]);
+  if (progress != progress_max)
+    progress++;
+  else {
+    splash_finished = 1;
+    if (bullets != null)
+      for (i = 0; i < bulletCount; i++) {
+        bullets[i].SetOpacity(1);
+      }
+    if (prompt.sprite != null)
+      prompt.sprite.SetOpacity(1);
+    if (message.sprite != null)
+      message.sprite.SetOpacity(1);
+  }
+}
+
+// only show logo sprite on boot
+if (Plymouth.GetMode() == "boot")
+  Plymouth.SetRefreshFunction(refresh_callback);
+
+fun DisplayQuestionCallback(prompt, entry) {
+  question = null;
+  answer = null;
+
+  if (entry == "")
+    entry = "<answer>";
+
+  question.image = Image.Text(prompt, 1, 1, 1, font);
+  question.sprite = Sprite(question.image);
+  question.sprite.SetX(screen.half.w - question.image.GetWidth() / 2);
+  question.sprite.SetY(screen.h - 4 * question.image.GetHeight());
+
+  answer.image = Image.Text(entry, 1, 1, 1, font);
+  answer.sprite = Sprite(answer.image);
+  answer.sprite.SetX(screen.half.w - answer.image.GetWidth() / 2);
+  answer.sprite.SetY(screen.h - 2 * answer.image.GetHeight());
+}
+Plymouth.SetDisplayQuestionFunction(DisplayQuestionCallback);
+
+fun DisplayPasswordCallback(nil, bulletCount) {
+  totalWidth = bulletCount * bullet.image.GetWidth();
+  startPos = screen.half.w - totalWidth / 2;
+
+  prompt.image = Image.Text("Enter Password", 1, 1, 1);
+  prompt.sprite = Sprite(prompt.image);
+  prompt.sprite.SetX(screen.half.w - prompt.image.GetWidth() / 2);
+  prompt.sprite.SetY(screen.h - 4 * prompt.image.GetHeight());
+
+  if (splash_finished == 0)
+    prompt.sprite.SetOpacity(0);
+
+  // Clear all bullets (user might hit backspace)
+  bullets = null;
+  for (i = 0; i < bulletCount; i++) {
+    sprite = Sprite(bullet.image);
+    sprite.SetX(startPos + i * bullet.image.GetWidth());
+    sprite.SetY(screen.h - 2 * bullet.image.GetHeight());
+    if (splash_finished == 0)
+      sprite.SetOpacity(0);
+    bullets[i].sprite = sprite;
+  }
+}
+Plymouth.SetDisplayPasswordFunction(DisplayPasswordCallback);
+
+fun DisplayNormalCallback() {
+  bullets = null;
+  prompt = null;
+  message = null;
+  question = null;
+  answer = null;
+}
+Plymouth.SetDisplayNormalFunction(DisplayNormalCallback);
+
+fun MessageCallback(text) {
+  message.image = Image.Text(text, 1, 1, 1);
+  message.sprite = Sprite(message.image);
+  message.sprite.SetPosition(screen.half.w - message.image.GetWidth() / 2, message.image.GetHeight());
+  if (splash_finished == 0)
+    message.sprite.SetOpacity(0);
+}
+Plymouth.SetMessageFunction(MessageCallback);
