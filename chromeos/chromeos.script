@@ -17,9 +17,10 @@ message = null;
 font = "Noto Sans 12"; 
 
 // Password prompt
-bullets = null;
 prompt = null;
 bullet.image = Image.Text("●", 1, 1, 1, font);
+bullet.count = null;
+bullet.sprites = null;
 
 splash_frames_count = 30;
 
@@ -48,13 +49,12 @@ fun refresh_callback() {
     progress++;
   else {
     splash_finished = 1;
-    if (bullets != null)
-      for (i = 0; i < bulletCount; i++) {
-        bullets[i].SetOpacity(1);
-      }
-    if (prompt.sprite != null)
+    if (bullet.count)
+      for (i = 0; i < bullet.count; i++)
+        bullet.sprites[i].SetOpacity(1);
+    if (prompt.sprite)
       prompt.sprite.SetOpacity(1);
-    if (message.sprite != null)
+    if (message.sprite)
       message.sprite.SetOpacity(1);
   }
 }
@@ -83,7 +83,9 @@ fun DisplayQuestionCallback(prompt, entry) {
 Plymouth.SetDisplayQuestionFunction(DisplayQuestionCallback);
 
 fun DisplayPasswordCallback(nil, bulletCount) {
-  totalWidth = bulletCount * bullet.image.GetWidth();
+  bullet.count = bulletCount;
+
+  totalWidth = bullet.count * bullet.image.GetWidth();
   startPos = screen.half.w - totalWidth / 2;
 
   prompt.image = Image.Text("Enter Password", 1, 1, 1);
@@ -95,20 +97,21 @@ fun DisplayPasswordCallback(nil, bulletCount) {
     prompt.sprite.SetOpacity(0);
 
   // Clear all bullets (user might hit backspace)
-  bullets = null;
-  for (i = 0; i < bulletCount; i++) {
+  bullet.sprites = null;
+  for (i = 0; i < bullet.count; i++) {
     sprite = Sprite(bullet.image);
     sprite.SetX(startPos + i * bullet.image.GetWidth());
     sprite.SetY(screen.h - 2 * bullet.image.GetHeight());
     if (splash_finished == 0)
       sprite.SetOpacity(0);
-    bullets[i].sprite = sprite;
+    bullet.sprites[i] = sprite;
   }
 }
 Plymouth.SetDisplayPasswordFunction(DisplayPasswordCallback);
 
 fun DisplayNormalCallback() {
-  bullets = null;
+  bullet.count = null;
+  bullet.sprites = null;
   prompt = null;
   message = null;
   question = null;
